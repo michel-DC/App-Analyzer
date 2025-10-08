@@ -5,6 +5,7 @@
 
 export interface AuditOptions {
   lighthouse: boolean;
+  rowId?: string;
 }
 
 export interface AuditIssue {
@@ -38,6 +39,7 @@ export interface AuditReport {
     title: string;
     firstH1: string;
   };
+  rowId?: string; // ID de ligne pour traçabilité
 }
 
 export interface LighthouseResult {

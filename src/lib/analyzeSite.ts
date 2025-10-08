@@ -129,6 +129,7 @@ export async function analyzeSite(
       shortSummary: generateShortSummary(allIssues, overallScore),
       recommendations: generateRecommendations(allIssues),
       pageInfo,
+      rowId: options.rowId,
     };
 
     return report;
@@ -149,6 +150,7 @@ export async function analyzeSite(
       shortSummary: "",
       recommendations: [],
       message: handleError(error),
+      rowId: options.rowId,
     };
   } finally {
     // Nettoyage des ressources
