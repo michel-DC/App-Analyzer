@@ -1,26 +1,58 @@
 /**
  * Configuration Puppeteer pour l'audit web
  * Définit les options de lancement du navigateur pour l'analyse
+ * Compatible avec Vercel et les environnements serverless
  */
 
 import puppeteer, { type LaunchOptions, type Browser } from "puppeteer";
+import chromium from "@sparticuz/chromium";
 
-export const PUPPETEER_OPTIONS: LaunchOptions = {
-  headless: true,
-  args: [
-    "--no-sandbox",
-    "--disable-setuid-sandbox",
-    "--disable-dev-shm-usage",
-    "--disable-accelerated-2d-canvas",
-    "--no-first-run",
-    "--no-zygote",
-    "--disable-gpu",
-    "--disable-background-timer-throttling",
-    "--disable-backgrounding-occluded-windows",
-    "--disable-renderer-backgrounding",
-  ],
-  timeout: 30000, // 30 secondes pour le lancement
-};
+/**
+ * Détecte si l'application s'exécute sur Vercel
+ */
+const isVercel = process.env.VERCEL === "1";
+
+/**
+ * Génère les options Puppeteer selon l'environnement
+ * @returns Promise<LaunchOptions> Options de lancement
+ */
+export async function getPuppeteerOptions(): Promise<LaunchOptions> {
+  const baseOptions: LaunchOptions = {
+    headless: true,
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-accelerated-2d-canvas",
+      "--no-first-run",
+      "--no-zygote",
+      "--disable-gpu",
+      "--disable-background-timer-throttling",
+      "--disable-backgrounding-occluded-windows",
+      "--disable-renderer-backgrounding",
+    ],
+    timeout: 30000, // 30 secondes pour le lancement
+  };
+
+  // Configuration spécifique à Vercel
+  if (isVercel) {
+    return {
+      ...baseOptions,
+      args: [
+        ...baseOptions.args!,
+        "--disable-extensions",
+        "--disable-plugins",
+        "--disable-images",
+        "--disable-javascript",
+        "--disable-web-security",
+        "--disable-features=VizDisplayCompositor",
+      ],
+      executablePath: await chromium.executablePath(),
+    };
+  }
+
+  return baseOptions;
+}
 
 export const VIEWPORT_CONFIGS = {
   mobile: {
@@ -44,7 +76,8 @@ export const VIEWPORT_CONFIGS = {
  * @returns Promise<Browser> Instance du navigateur
  */
 export async function createBrowser(): Promise<Browser> {
-  return await puppeteer.launch(PUPPETEER_OPTIONS);
+  const options = await getPuppeteerOptions();
+  return await puppeteer.launch(options);
 }
 
 /**

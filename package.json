@@ -6,13 +6,17 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "deploy": "vercel --prod",
+    "deploy:preview": "vercel"
   },
   "dependencies": {
+    "@sparticuz/chromium": "^131.0.0",
     "lighthouse": "^12.8.2",
     "next": "15.5.4",
     "p-timeout": "^7.0.1",
     "puppeteer": "^24.23.0",
+    "puppeteer-core": "^24.23.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "zod": "^4.1.12"
