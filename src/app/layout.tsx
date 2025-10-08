@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "App analyzer",
   description: "Analyze apps",
   icons: {
-    icon: "/assets/search.svg",
+    icon: "/assets/server-icon.svg",
   },
 };
 
