@@ -130,6 +130,7 @@ export async function analyzeSite(
       recommendations: generateRecommendations(allIssues),
       pageInfo,
       rowId: options.rowId,
+      company_email: options.company_email,
     };
 
     return report;
@@ -151,6 +152,7 @@ export async function analyzeSite(
       recommendations: [],
       message: handleError(error),
       rowId: options.rowId,
+      company_email: options.company_email,
     };
   } finally {
     // Nettoyage des ressources

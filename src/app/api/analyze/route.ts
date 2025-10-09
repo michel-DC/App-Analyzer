@@ -25,6 +25,7 @@ const AnalyzeRequestSchema = z.object({
     .object({
       lighthouse: z.boolean().default(true),
       rowId: z.string().optional(),
+      company_email: z.string().optional(),
     })
     .partial()
     .default({ lighthouse: true }),
@@ -95,11 +96,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     console.log("🔬 [API] Options passées à analyzeSite:", {
       lighthouse: options?.lighthouse ?? true,
       rowId: options?.rowId,
+      company_email: options?.company_email,
     });
 
     const report: AuditReport = await analyzeSite(normalizedUrl, {
       lighthouse: options?.lighthouse ?? true,
       rowId: options?.rowId,
+      company_email: options?.company_email,
     });
 
     console.log(
