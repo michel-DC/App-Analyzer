@@ -1,11 +1,11 @@
 {
   "functions": {
     "src/app/api/analyze/route.ts": {
-      "maxDuration": 60
+      "maxDuration": 60,
+      "memory": 3072
     }
   },
   "env": {
-    "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true",
-    "PUPPETEER_EXECUTABLE_PATH": "/opt/chrome/chrome"
+    "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true"
   }
 }

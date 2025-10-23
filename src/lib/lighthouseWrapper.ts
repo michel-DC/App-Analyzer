@@ -1,15 +1,7 @@
-/**
- * Wrapper pour Lighthouse - Isolation des dépendances Node.js
- * Ce module charge dynamiquement Lighthouse uniquement côté serveur
- * et évite les problèmes de bundling avec Next.js
- */
-
 import type { Page } from "puppeteer";
 import type { LighthouseResult } from "../types/report";
+import { getMessage } from "./messages";
 
-/**
- * Interface pour le résultat Lighthouse
- */
 interface LighthouseRunnerResult {
   lhr: {
     categories: {
@@ -21,36 +13,25 @@ interface LighthouseRunnerResult {
   };
 }
 
-/**
- * Vérifie si nous sommes côté serveur
- */
 function isServer(): boolean {
   return typeof window === "undefined";
 }
 
-/**
- * Exécute Lighthouse avec chargement dynamique et gestion d'erreurs robuste
- * @param page Instance Puppeteer de la page
- * @param url URL de la page à analyser
- * @returns Promise<LighthouseResult> Scores Lighthouse
- */
 export async function runLighthouseSafe(
   page: Page,
   url: string
 ): Promise<LighthouseResult> {
-  // Vérification côté serveur uniquement
   if (!isServer()) {
     console.warn("Lighthouse ne peut pas s'exécuter côté client");
     return {
-      performance: 0,
-      seo: 0,
-      accessibility: 0,
-      bestPractices: 0,
+      performance: -1,
+      seo: -1,
+      accessibility: -1,
+      bestPractices: -1,
     };
   }
 
   try {
-    // Chargement dynamique de Lighthouse avec gestion d'erreurs
     const lighthouseModule = await import("lighthouse");
     const lighthouse = lighthouseModule.default;
 
@@ -58,18 +39,22 @@ export async function runLighthouseSafe(
       throw new Error("Lighthouse n'a pas pu être chargé");
     }
 
-    // Configuration Lighthouse optimisée
+    const browser = page.browser();
+    const browserWSEndpoint = browser.wsEndpoint();
+    const portMatch = browserWSEndpoint.match(/:(\d+)\//);
+    const port = portMatch ? parseInt(portMatch[1]) : 9222;
+
+    console.log(`Lighthouse utilise le port: ${port}`);
+
     const options = {
       logLevel: "error" as const,
       output: "json" as const,
       onlyCategories: ["performance", "seo", "accessibility", "best-practices"],
-      port: parseInt(new URL(page.url()).port || "9222"),
-      // Configuration pour éviter les problèmes de réseau
+      port: port,
       disableStorageReset: true,
       disableDeviceEmulation: true,
     };
 
-    // Exécution de Lighthouse avec timeout
     const runnerResult = (await lighthouse(
       url,
       options
@@ -81,7 +66,6 @@ export async function runLighthouseSafe(
 
     const lhr = runnerResult.lhr;
 
-    // Extraction sécurisée des scores avec valeurs par défaut
     const result: LighthouseResult = {
       performance: Math.round((lhr.categories.performance?.score || 0) * 100),
       seo: Math.round((lhr.categories.seo?.score || 0) * 100),
@@ -97,88 +81,146 @@ export async function runLighthouseSafe(
   } catch (error) {
     console.warn("Erreur lors de l'exécution de Lighthouse:", error);
 
-    // Retour de scores par défaut en cas d'erreur
     return {
-      performance: 0,
-      seo: 0,
-      accessibility: 0,
-      bestPractices: 0,
+      performance: -1,
+      seo: -1,
+      accessibility: -1,
+      bestPractices: -1,
     };
   }
 }
 
-/**
- * Génère des issues basées sur les scores Lighthouse
- * @param lighthouseResult Scores Lighthouse
- * @returns Array<{type: string, message: string, severity: string}> Issues générées
- */
 export function generateLighthouseIssues(
   lighthouseResult: LighthouseResult
 ): Array<{
   type: string;
   message: string;
   severity: string;
+  messageKey?: string;
+  priority?: "critique" | "important" | "amélioration";
+  description?: string;
+  impact?: string;
+  action?: string;
 }> {
-  const issues: Array<{ type: string; message: string; severity: string }> = [];
+  const issues: Array<{
+    type: string;
+    message: string;
+    severity: string;
+    messageKey?: string;
+    priority?: "critique" | "important" | "amélioration";
+    description?: string;
+    impact?: string;
+    action?: string;
+  }> = [];
 
-  // Issues de performance
-  if (lighthouseResult.performance < 50) {
-    issues.push({
-      type: "Performance",
-      message: `Score de performance très faible: ${lighthouseResult.performance}/100`,
-      severity: "high",
-    });
+  function createIssue(
+    messageKey: string,
+    type: string,
+    severity: string,
+    customMessage?: string
+  ): void {
+    const message = getMessage(messageKey);
+    if (message) {
+      issues.push({
+        type,
+        message: customMessage || message.short,
+        severity,
+        messageKey,
+        priority: message.priority,
+        description: message.description,
+        impact: message.impact,
+        action: message.action,
+      });
+    } else {
+      issues.push({
+        type,
+        message: customMessage || "Problème détecté",
+        severity,
+        messageKey,
+      });
+    }
+  }
+
+  const allFailed =
+    lighthouseResult.performance === -1 &&
+    lighthouseResult.seo === -1 &&
+    lighthouseResult.accessibility === -1 &&
+    lighthouseResult.bestPractices === -1;
+
+  if (allFailed) {
+    return issues;
+  }
+
+  if (lighthouseResult.performance === -1) {
+    return issues;
+  } else if (lighthouseResult.performance < 50) {
+    createIssue(
+      "low_performance_score",
+      "Performance",
+      "high",
+      `Score de performance Lighthouse très faible : ${lighthouseResult.performance}/100`
+    );
   } else if (lighthouseResult.performance < 75) {
-    issues.push({
-      type: "Performance",
-      message: `Score de performance faible: ${lighthouseResult.performance}/100`,
-      severity: "medium",
-    });
+    createIssue(
+      "low_performance_score",
+      "Performance",
+      "medium",
+      `Score de performance Lighthouse à améliorer : ${lighthouseResult.performance}/100`
+    );
   }
 
-  // Issues SEO
-  if (lighthouseResult.seo < 50) {
-    issues.push({
-      type: "SEO",
-      message: `Score SEO très faible: ${lighthouseResult.seo}/100`,
-      severity: "high",
-    });
+  if (lighthouseResult.seo === -1) {
+    return issues;
+  } else if (lighthouseResult.seo < 50) {
+    createIssue(
+      "low_seo_score",
+      "SEO",
+      "high",
+      `Score SEO Lighthouse très faible : ${lighthouseResult.seo}/100`
+    );
   } else if (lighthouseResult.seo < 75) {
-    issues.push({
-      type: "SEO",
-      message: `Score SEO faible: ${lighthouseResult.seo}/100`,
-      severity: "medium",
-    });
+    createIssue(
+      "low_seo_score",
+      "SEO",
+      "medium",
+      `Score SEO Lighthouse à améliorer : ${lighthouseResult.seo}/100`
+    );
   }
 
-  // Issues d'accessibilité
-  if (lighthouseResult.accessibility < 50) {
-    issues.push({
-      type: "Accessibility",
-      message: `Score d'accessibilité très faible: ${lighthouseResult.accessibility}/100`,
-      severity: "high",
-    });
+  if (lighthouseResult.accessibility === -1) {
+    return issues;
+  } else if (lighthouseResult.accessibility < 50) {
+    createIssue(
+      "low_accessibility_score",
+      "Accessibility",
+      "high",
+      `Score d'accessibilité Lighthouse très faible : ${lighthouseResult.accessibility}/100`
+    );
   } else if (lighthouseResult.accessibility < 75) {
-    issues.push({
-      type: "Accessibility",
-      message: `Score d'accessibilité faible: ${lighthouseResult.accessibility}/100`,
-      severity: "medium",
-    });
+    createIssue(
+      "low_accessibility_score",
+      "Accessibility",
+      "medium",
+      `Score d'accessibilité Lighthouse à améliorer : ${lighthouseResult.accessibility}/100`
+    );
   }
 
-  // Issues de bonnes pratiques
-  if (lighthouseResult.bestPractices < 50) {
-    issues.push({
-      type: "Best Practices",
-      message: `Score de bonnes pratiques très faible: ${lighthouseResult.bestPractices}/100`,
-      severity: "high",
-    });
+  if (lighthouseResult.bestPractices === -1) {
+    return issues;
+  } else if (lighthouseResult.bestPractices < 50) {
+    createIssue(
+      "low_best_practices_score",
+      "Best Practices",
+      "high",
+      `Score de bonnes pratiques Lighthouse très faible : ${lighthouseResult.bestPractices}/100`
+    );
   } else if (lighthouseResult.bestPractices < 75) {
-    issues.push({
-      type: "Best Practices",
-      message: `Score de bonnes pratiques faible: ${lighthouseResult.bestPractices}/100`,
-      severity: "medium",
-    });
+    createIssue(
+      "low_best_practices_score",
+      "Best Practices",
+      "medium",
+      `Score de bonnes pratiques Lighthouse à améliorer : ${lighthouseResult.bestPractices}/100`
+    );
   }
 
   return issues;

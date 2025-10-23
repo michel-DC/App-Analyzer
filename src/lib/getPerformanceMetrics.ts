@@ -1,21 +1,49 @@
-/**
- * Récupérateur de métriques de performance
- * Mesure les performances de chargement et teste le responsive design
- */
-
 import type { Page } from "puppeteer";
 import type { PerformanceMetrics, AuditIssue } from "../types/report";
 import { RESPONSIVE_TEST_CONFIG } from "../config/puppeteer.config";
+import { getMessage } from "./messages";
 
-/**
- * Récupère les métriques de performance d'une page
- * @param page Instance Puppeteer de la page
- * @returns Promise<PerformanceMetrics> Métriques de performance
- */
 export async function getPerformanceMetrics(
   page: Page
 ): Promise<PerformanceMetrics> {
-  // Récupération des métriques de performance via l'API Performance
+  await page.evaluate(() => {
+    (window as any).__clsValue = 0;
+    (window as any).__fidValue = 0;
+
+    let clsScore = 0;
+
+    try {
+      const observer = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          if (!(entry as any).hadRecentInput) {
+            clsScore += (entry as any).value;
+          }
+        }
+        (window as any).__clsValue = clsScore;
+      });
+      observer.observe({ type: "layout-shift", buffered: true });
+    } catch (e) {
+      console.warn("CLS monitoring not supported");
+    }
+
+    try {
+      const fidObserver = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          const firstInput = entry as PerformanceEventTiming;
+          if (firstInput.processingStart && firstInput.startTime) {
+            const fid = firstInput.processingStart - firstInput.startTime;
+            (window as any).__fidValue = fid;
+          }
+        }
+      });
+      fidObserver.observe({ type: "first-input", buffered: true });
+    } catch (e) {
+      console.warn("FID monitoring not supported");
+    }
+  });
+
+  await new Promise((resolve) => setTimeout(resolve, 1500));
+
   const metrics = await page.evaluate(() => {
     const navigation = performance.getEntriesByType(
       "navigation"
@@ -33,12 +61,11 @@ export async function getPerformanceMetrics(
       firstContentfulPaint: fcp ? fcp.startTime : 0,
       largestContentfulPaint:
         lcp.length > 0 ? lcp[lcp.length - 1].startTime : 0,
-      cumulativeLayoutShift: 0, // Sera calculé via Lighthouse
-      firstInputDelay: 0, // Sera calculé via Lighthouse
+      cumulativeLayoutShift: (window as any).__clsValue || 0,
+      firstInputDelay: (window as any).__fidValue || 0,
     };
   });
 
-  // Test du responsive design
   const responsiveResults = await testResponsiveDesign(page);
 
   return {
@@ -48,53 +75,49 @@ export async function getPerformanceMetrics(
   };
 }
 
-/**
- * Teste le responsive design sur mobile et desktop
- * @param page Instance Puppeteer de la page
- * @returns Promise<{mobile: boolean, desktop: boolean}> Résultats des tests
- */
 async function testResponsiveDesign(
   page: Page
 ): Promise<{ mobile: boolean; desktop: boolean }> {
   const results = { mobile: false, desktop: false };
 
   try {
-    // Test mobile
+    const originalViewport = page.viewport();
+
     await page.setViewport(RESPONSIVE_TEST_CONFIG.mobile.viewport);
-    await page.setUserAgent(RESPONSIVE_TEST_CONFIG.mobile.userAgent);
-    await page.reload({ waitUntil: "networkidle0" });
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     const mobileCheck = await page.evaluate(() => {
       const viewport = document.querySelector('meta[name="viewport"]');
       const bodyWidth = document.body.scrollWidth;
       const windowWidth = window.innerWidth;
 
-      // Vérifie si la page s'adapte correctement au mobile
       return {
         hasViewport: !!viewport,
-        isResponsive: bodyWidth <= windowWidth * 1.1, // 10% de tolérance
+        isResponsive: bodyWidth <= windowWidth * 1.1,
         noHorizontalScroll: bodyWidth <= windowWidth,
       };
     });
 
     results.mobile = mobileCheck.hasViewport && mobileCheck.isResponsive;
 
-    // Test desktop
     await page.setViewport(RESPONSIVE_TEST_CONFIG.desktop.viewport);
-    await page.setUserAgent(RESPONSIVE_TEST_CONFIG.desktop.userAgent);
-    await page.reload({ waitUntil: "networkidle0" });
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     const desktopCheck = await page.evaluate(() => {
       const bodyWidth = document.body.scrollWidth;
       const windowWidth = window.innerWidth;
 
       return {
-        isResponsive: bodyWidth <= windowWidth * 1.05, // 5% de tolérance pour desktop
+        isResponsive: bodyWidth <= windowWidth * 1.05,
         noHorizontalScroll: bodyWidth <= windowWidth,
       };
     });
 
     results.desktop = desktopCheck.isResponsive;
+
+    if (originalViewport) {
+      await page.setViewport(originalViewport);
+    }
   } catch (error) {
     console.warn("Erreur lors du test responsive:", error);
   }
@@ -102,76 +125,107 @@ async function testResponsiveDesign(
   return results;
 }
 
-/**
- * Génère les issues basées sur les métriques de performance
- * @param metrics Métriques de performance
- * @returns AuditIssue[] Liste des issues détectées
- */
 export function generatePerformanceIssues(
   metrics: PerformanceMetrics
 ): AuditIssue[] {
   const issues: AuditIssue[] = [];
 
-  // Vérification du temps de chargement
+  function createIssue(
+    messageKey: string,
+    type: AuditIssue["type"],
+    severity: AuditIssue["severity"],
+    customMessage?: string
+  ): void {
+    const message = getMessage(messageKey);
+    if (message) {
+      issues.push({
+        type,
+        message: customMessage || message.short,
+        severity,
+        messageKey,
+        priority: message.priority,
+        description: message.description,
+        impact: message.impact,
+        action: message.action,
+        codeExample: message.codeExample,
+      });
+    } else {
+      issues.push({
+        type,
+        message: customMessage || "Problème détecté",
+        severity,
+        messageKey,
+      });
+    }
+  }
+
   if (metrics.loadTime > 3000) {
-    issues.push({
-      type: "Performance",
-      message: `Temps de chargement élevé: ${Math.round(metrics.loadTime)}ms`,
-      severity: metrics.loadTime > 5000 ? "high" : "medium",
-    });
+    createIssue(
+      "slow_load_time",
+      "Performance",
+      metrics.loadTime > 5000 ? "high" : "medium",
+      `Temps de chargement élevé : ${Math.round(metrics.loadTime)}ms (objectif : moins de 3000ms)`
+    );
   }
 
-  // Vérification du First Contentful Paint
-  if (metrics.firstContentfulPaint > 2000) {
-    issues.push({
-      type: "Performance",
-      message: `First Contentful Paint élevé: ${Math.round(
+  if (metrics.firstContentfulPaint > 1800) {
+    createIssue(
+      "slow_fcp",
+      "Performance",
+      metrics.firstContentfulPaint > 3000 ? "high" : "medium",
+      `First Contentful Paint trop lent : ${Math.round(
         metrics.firstContentfulPaint
-      )}ms`,
-      severity: metrics.firstContentfulPaint > 3000 ? "high" : "medium",
-    });
+      )}ms (objectif : moins de 1800ms)`
+    );
   }
 
-  // Vérification du Largest Contentful Paint
   if (metrics.largestContentfulPaint > 2500) {
-    issues.push({
-      type: "Performance",
-      message: `Largest Contentful Paint élevé: ${Math.round(
+    createIssue(
+      "slow_lcp",
+      "Performance",
+      metrics.largestContentfulPaint > 4000 ? "high" : "medium",
+      `Largest Contentful Paint trop lent : ${Math.round(
         metrics.largestContentfulPaint
-      )}ms`,
-      severity: metrics.largestContentfulPaint > 4000 ? "high" : "medium",
-    });
+      )}ms (objectif : moins de 2500ms)`
+    );
   }
 
-  // Vérification du responsive design
+  if (metrics.cumulativeLayoutShift > 0.1) {
+    createIssue(
+      "high_cls",
+      "Performance",
+      metrics.cumulativeLayoutShift > 0.25 ? "high" : "medium",
+      `Cumulative Layout Shift élevé : ${metrics.cumulativeLayoutShift.toFixed(
+        3
+      )} (objectif : moins de 0.1)`
+    );
+  }
+
+  if (metrics.firstInputDelay > 100) {
+    createIssue(
+      "high_fid",
+      "Performance",
+      metrics.firstInputDelay > 300 ? "high" : "medium",
+      `First Input Delay élevé : ${Math.round(
+        metrics.firstInputDelay
+      )}ms (objectif : moins de 100ms)`
+    );
+  }
+
   if (!metrics.isMobileResponsive) {
-    issues.push({
-      type: "Best Practices",
-      message: "Site non optimisé pour mobile",
-      severity: "high",
-    });
+    createIssue("not_mobile_responsive", "Best Practices", "high");
   }
 
   if (!metrics.isDesktopResponsive) {
-    issues.push({
-      type: "Best Practices",
-      message: "Problèmes d'affichage sur desktop",
-      severity: "medium",
-    });
+    createIssue("desktop_responsive_issues", "Best Practices", "medium");
   }
 
   return issues;
 }
 
-/**
- * Calcule un score de performance basé sur les métriques
- * @param metrics Métriques de performance
- * @returns number Score de performance (0-100)
- */
 export function calculatePerformanceScore(metrics: PerformanceMetrics): number {
   let score = 100;
 
-  // Pénalités basées sur les métriques
   if (metrics.loadTime > 5000) score -= 30;
   else if (metrics.loadTime > 3000) score -= 20;
   else if (metrics.loadTime > 2000) score -= 10;

@@ -1,26 +1,22 @@
-/**
- * Analyseur HTML pour l'audit web
- * Vérifie la structure HTML, les balises meta, les titres et l'accessibilité
- */
-
 import type { Page } from "puppeteer";
 import type { HTMLAnalysis, AuditIssue } from "../types/report";
+import { getMessage } from "./messages";
 
-/**
- * Analyse la structure HTML d'une page
- * @param page Instance Puppeteer de la page
- * @returns Promise<HTMLAnalysis> Résultats de l'analyse HTML
- */
 export async function analyzeHTMLStructure(page: Page): Promise<HTMLAnalysis> {
   const analysis = await page.evaluate(() => {
-    // Vérification des balises meta essentielles
     const title = document.querySelector("title");
+    const titleText = title?.textContent?.trim() || "";
+    const titleLength = titleText.length;
+
     const metaDescription = document.querySelector('meta[name="description"]');
+    const metaDescriptionContent =
+      metaDescription?.getAttribute("content")?.trim() || "";
+    const metaDescriptionLength = metaDescriptionContent.length;
+
     const metaKeywords = document.querySelector('meta[name="keywords"]');
     const viewportMeta = document.querySelector('meta[name="viewport"]');
     const canonicalLink = document.querySelector('link[rel="canonical"]');
 
-    // Analyse de la structure des titres
     const headings = {
       h1: document.querySelectorAll("h1").length,
       h2: document.querySelectorAll("h2").length,
@@ -30,17 +26,16 @@ export async function analyzeHTMLStructure(page: Page): Promise<HTMLAnalysis> {
       h6: document.querySelectorAll("h6").length,
     };
 
-    // Analyse des images
     const images = document.querySelectorAll("img");
     const imagesWithoutAlt = Array.from(images).filter(
       (img) => !img.alt || img.alt.trim() === ""
     ).length;
 
     return {
-      hasTitle: !!title && title.textContent?.trim() !== "",
-      hasMetaDescription:
-        !!metaDescription &&
-        metaDescription.getAttribute("content")?.trim() !== "",
+      hasTitle: titleLength > 0,
+      titleLength,
+      hasMetaDescription: metaDescriptionLength > 0,
+      metaDescriptionLength,
       hasMetaKeywords:
         !!metaKeywords && metaKeywords.getAttribute("content")?.trim() !== "",
       headingStructure: headings,
@@ -54,95 +49,118 @@ export async function analyzeHTMLStructure(page: Page): Promise<HTMLAnalysis> {
   return analysis;
 }
 
-/**
- * Génère les issues basées sur l'analyse HTML
- * @param analysis Résultats de l'analyse HTML
- * @returns AuditIssue[] Liste des issues détectées
- */
 export function generateHTMLIssues(analysis: HTMLAnalysis): AuditIssue[] {
   const issues: AuditIssue[] = [];
 
-  // Vérification du titre
+  function createIssue(
+    messageKey: string,
+    type: AuditIssue["type"],
+    severity: AuditIssue["severity"],
+    customMessage?: string
+  ): void {
+    const message = getMessage(messageKey);
+    if (message) {
+      issues.push({
+        type,
+        message: customMessage || message.short,
+        severity,
+        messageKey,
+        priority: message.priority,
+        description: message.description,
+        impact: message.impact,
+        action: message.action,
+        codeExample: message.codeExample,
+      });
+    } else {
+      issues.push({
+        type,
+        message: customMessage || "Problème détecté",
+        severity,
+        messageKey,
+      });
+    }
+  }
+
   if (!analysis.hasTitle) {
-    issues.push({
-      type: "SEO",
-      message: "Titre de page manquant",
-      severity: "high",
-    });
+    createIssue("missing_title", "SEO", "high");
+  } else if (analysis.titleLength && analysis.titleLength < 30) {
+    createIssue(
+      "title_too_short",
+      "SEO",
+      "medium",
+      `Titre de page trop court (${analysis.titleLength} caractères)`
+    );
+  } else if (analysis.titleLength && analysis.titleLength > 60) {
+    createIssue(
+      "title_too_long",
+      "SEO",
+      "medium",
+      `Titre de page trop long (${analysis.titleLength} caractères)`
+    );
   }
 
-  // Vérification de la meta description
   if (!analysis.hasMetaDescription) {
-    issues.push({
-      type: "SEO",
-      message: "Meta description manquante",
-      severity: "high",
-    });
+    createIssue("missing_meta_description", "SEO", "high");
+  } else if (
+    analysis.metaDescriptionLength &&
+    analysis.metaDescriptionLength < 120
+  ) {
+    createIssue(
+      "meta_description_too_short",
+      "SEO",
+      "medium",
+      `Meta description trop courte (${analysis.metaDescriptionLength} caractères)`
+    );
+  } else if (
+    analysis.metaDescriptionLength &&
+    analysis.metaDescriptionLength > 160
+  ) {
+    createIssue(
+      "meta_description_too_long",
+      "SEO",
+      "medium",
+      `Meta description trop longue (${analysis.metaDescriptionLength} caractères)`
+    );
   }
 
-  // Vérification de la meta viewport
   if (!analysis.hasViewportMeta) {
-    issues.push({
-      type: "Best Practices",
-      message: "Meta viewport manquante pour le responsive design",
-      severity: "high",
-    });
+    createIssue("missing_viewport_meta", "Best Practices", "high");
   }
 
-  // Vérification du lien canonique
   if (!analysis.hasCanonicalLink) {
-    issues.push({
-      type: "SEO",
-      message: "Lien canonique manquant",
-      severity: "medium",
-    });
+    createIssue("missing_canonical_link", "SEO", "medium");
   }
 
-  // Vérification de la structure des titres
   if (analysis.headingStructure.h1 === 0) {
-    issues.push({
-      type: "HTML Structure",
-      message: "Aucun titre H1 trouvé",
-      severity: "high",
-    });
+    createIssue("missing_h1", "HTML Structure", "high");
   } else if (analysis.headingStructure.h1 > 1) {
-    issues.push({
-      type: "HTML Structure",
-      message: "Plusieurs titres H1 trouvés (recommandé: un seul)",
-      severity: "medium",
-    });
+    createIssue(
+      "multiple_h1",
+      "HTML Structure",
+      "medium",
+      `${analysis.headingStructure.h1} titres H1 trouvés (recommandé : un seul)`
+    );
   }
 
-  // Vérification des images sans alt
   if (analysis.imagesWithoutAlt > 0) {
-    issues.push({
-      type: "Accessibility",
-      message: `${analysis.imagesWithoutAlt} image(s) sans attribut alt`,
-      severity: analysis.imagesWithoutAlt > 5 ? "high" : "medium",
-    });
+    createIssue(
+      "images_without_alt",
+      "Accessibility",
+      analysis.imagesWithoutAlt > 5 ? "high" : "medium",
+      `${analysis.imagesWithoutAlt} image(s) sans description alternative (attribut alt)`
+    );
   }
 
-  // Vérification de la hiérarchie des titres
   if (analysis.headingStructure.h2 > 0 && analysis.headingStructure.h1 === 0) {
-    issues.push({
-      type: "HTML Structure",
-      message: "Titres H2 présents sans H1",
-      severity: "medium",
-    });
+    createIssue("h2_without_h1", "HTML Structure", "medium");
   }
 
   return issues;
 }
 
-/**
- * Calcule un score SEO basé sur l'analyse HTML
- * @param analysis Résultats de l'analyse HTML
- * @returns number Score SEO (0-100)
- */
 export function calculateSEOScore(analysis: HTMLAnalysis): number {
   let score = 100;
 
-  // Pénalités pour les éléments manquants
   if (!analysis.hasTitle) score -= 30;
   if (!analysis.hasMetaDescription) score -= 25;
   if (!analysis.hasViewportMeta) score -= 20;

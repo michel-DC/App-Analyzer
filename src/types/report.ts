@@ -1,8 +1,3 @@
-/**
- * Types TypeScript pour l'API d'audit web
- * Définit les interfaces pour les options d'audit, les rapports et les issues
- */
-
 export interface AuditOptions {
   lighthouse: boolean;
   rowId?: string;
@@ -18,6 +13,12 @@ export interface AuditIssue {
     | "HTML Structure";
   message: string;
   severity: "low" | "medium" | "high";
+  messageKey?: string;
+  priority?: "critique" | "important" | "amélioration";
+  description?: string;
+  impact?: string;
+  action?: string;
+  codeExample?: string;
 }
 
 export interface AuditCategories {
@@ -32,16 +33,20 @@ export interface AuditReport {
   url: string;
   score: number;
   categories: AuditCategories;
-  issues: AuditIssue[];
+  issues: Array<{
+    type: "SEO" | "Performance" | "Accessibility" | "Best Practices" | "HTML Structure";
+    message: string;
+    severity: "low" | "medium" | "high";
+  }>;
   shortSummary: string;
   recommendations: string[];
-  message?: string; // Pour les cas d'erreur
+  message?: string;
   pageInfo?: {
     title: string;
     firstH1: string;
   };
-  rowId?: string; // ID de ligne pour traçabilité
-  company_email?: string; // Email de l'entreprise pour traçabilité
+  rowId?: string;
+  company_email?: string;
 }
 
 export interface LighthouseResult {
@@ -53,7 +58,9 @@ export interface LighthouseResult {
 
 export interface HTMLAnalysis {
   hasTitle: boolean;
+  titleLength?: number;
   hasMetaDescription: boolean;
+  metaDescriptionLength?: number;
   hasMetaKeywords: boolean;
   headingStructure: {
     h1: number;

@@ -1,21 +1,39 @@
-/**
- * Configuration Puppeteer pour l'audit web
- * Définit les options de lancement du navigateur pour l'analyse
- * Compatible avec Vercel et les environnements serverless
- */
+import type { LaunchOptions, Browser } from "puppeteer";
+import { execSync } from "child_process";
+import { existsSync } from "fs";
 
-import puppeteer, { type LaunchOptions, type Browser } from "puppeteer";
-import chromium from "@sparticuz/chromium";
-
-/**
- * Détecte si l'application s'exécute sur Vercel
- */
+const isProduction = process.env.NODE_ENV === "production";
 const isVercel = process.env.VERCEL === "1";
 
-/**
- * Génère les options Puppeteer selon l'environnement
- * @returns Promise<LaunchOptions> Options de lancement
- */
+function findChromeExecutable(): string | undefined {
+  const possiblePaths = [
+    "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+    process.env.LOCALAPPDATA + "\\Google\\Chrome\\Application\\chrome.exe",
+  ];
+
+  for (const path of possiblePaths) {
+    if (path && existsSync(path)) {
+      return path;
+    }
+  }
+
+  try {
+    const result = execSync(
+      'reg query "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\chrome.exe" /ve',
+      { encoding: "utf8" }
+    );
+    const match = result.match(/REG_SZ\s+(.+)/);
+    if (match && match[1]) {
+      return match[1].trim();
+    }
+  } catch (error) {
+    console.warn("Could not find Chrome in registry");
+  }
+
+  return undefined;
+}
+
 export async function getPuppeteerOptions(): Promise<LaunchOptions> {
   const baseOptions: LaunchOptions = {
     headless: true,
@@ -31,23 +49,31 @@ export async function getPuppeteerOptions(): Promise<LaunchOptions> {
       "--disable-backgrounding-occluded-windows",
       "--disable-renderer-backgrounding",
     ],
-    timeout: 30000, // 30 secondes pour le lancement
+    timeout: 30000,
   };
 
-  // Configuration spécifique à Vercel
-  if (isVercel) {
+  if (isProduction || isVercel) {
+    const chromium = await import("@sparticuz/chromium");
     return {
       ...baseOptions,
       args: [
         ...baseOptions.args!,
+        ...chromium.default.args,
         "--disable-extensions",
         "--disable-plugins",
-        "--disable-images",
-        "--disable-javascript",
         "--disable-web-security",
         "--disable-features=VizDisplayCompositor",
       ],
-      executablePath: await chromium.executablePath(),
+      executablePath: await chromium.default.executablePath(),
+    };
+  }
+
+  const chromePath = findChromeExecutable();
+  if (chromePath) {
+    console.log("Using Chrome at:", chromePath);
+    return {
+      ...baseOptions,
+      executablePath: chromePath,
     };
   }
 
@@ -71,18 +97,18 @@ export const VIEWPORT_CONFIGS = {
   },
 } as const;
 
-/**
- * Crée une nouvelle instance de navigateur Puppeteer
- * @returns Promise<Browser> Instance du navigateur
- */
 export async function createBrowser(): Promise<Browser> {
   const options = await getPuppeteerOptions();
-  return await puppeteer.launch(options);
+  
+  if (isProduction || isVercel) {
+    const puppeteerCore = await import("puppeteer-core");
+    return await puppeteerCore.default.launch(options);
+  }
+  
+  const puppeteer = await import("puppeteer");
+  return await puppeteer.default.launch(options);
 }
 
-/**
- * Configuration pour les tests de responsive design
- */
 export const RESPONSIVE_TEST_CONFIG = {
   mobile: {
     viewport: VIEWPORT_CONFIGS.mobile,

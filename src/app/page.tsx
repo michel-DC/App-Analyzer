@@ -1,9 +1,7 @@
 export default function Home() {
   return (
     <main className="min-h-screen bg-white flex flex-col items-center justify-center px-4">
-      {/* Hero Section */}
       <div className="max-w-4xl mx-auto text-center">
-        {/* Logo et titre */}
         <div className="mb-12">
           <div className="flex items-center justify-center gap-3 mb-6">
             <img
@@ -20,7 +18,6 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Image centrale */}
         <div className="mb-16 flex justify-center">
           <div className="relative">
             <img
@@ -31,8 +28,7 @@ export default function Home() {
           </div>
         </div>
       </div>
-
-      {/* Features techniques */}
+      
       <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
         <div className="p-6 rounded-lg bg-gray-50">
           <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">

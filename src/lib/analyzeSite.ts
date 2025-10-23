@@ -1,8 +1,3 @@
-/**
- * Orchestrateur principal d'audit web
- * Coordonne tous les modules d'analyse et génère le rapport final
- */
-
 import type { Page } from "puppeteer";
 import { createBrowser } from "../config/puppeteer.config";
 import {
@@ -24,14 +19,14 @@ import {
 } from "./getPerformanceMetrics";
 import { runLighthouse, generateLighthouseIssues } from "./runLighthouse";
 import { extractPageInfo } from "./extractPageInfo";
+import { detectTechnologies, getSiteTypeLabel } from "./detectTechnologies";
+import {
+  generateContextualRecommendations,
+  generateQuickWins,
+  generateSiteTypeSpecificAdvice,
+} from "./contextualRecommendations";
 import type { AuditReport, AuditOptions, AuditIssue } from "../types/report";
 
-/**
- * Analyse complète d'un site web
- * @param url URL du site à analyser
- * @param options Options d'audit
- * @returns Promise<AuditReport> Rapport d'audit complet
- */
 export async function analyzeSite(
   url: string,
   options: AuditOptions
@@ -40,7 +35,6 @@ export async function analyzeSite(
   let page: Page | null = null;
 
   try {
-    // Lancement du navigateur avec timeout
     browser = await withTimeout(
       createBrowser(),
       30000,
@@ -48,57 +42,67 @@ export async function analyzeSite(
     );
     page = await browser.newPage();
 
-    // Configuration de la page
     await page.setViewport({ width: 1920, height: 1080 });
     await page.setUserAgent(
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     );
 
-    // Navigation vers l'URL avec timeout
     await withTimeout(
       page.goto(url, { waitUntil: "networkidle0", timeout: 30000 }),
       30000,
       "Timeout: site inaccessible"
     );
 
-    // Extraction des informations de base de la page
     const pageInfo = await extractPageInfo(page);
 
-    // Analyse HTML
+    const technologyDetection = await detectTechnologies(page);
+
     const htmlAnalysis = await analyzeHTMLStructure(page);
     const htmlIssues = generateHTMLIssues(htmlAnalysis);
     const seoScore = calculateSEOScore(htmlAnalysis);
 
-    // Métriques de performance
     const performanceMetrics = await getPerformanceMetrics(page);
     const performanceIssues = generatePerformanceIssues(performanceMetrics);
     const performanceScore = calculatePerformanceScore(performanceMetrics);
 
-    // Scores par défaut
     let categories = {
       seo: seoScore,
       performance: performanceScore,
-      accessibility: 75, // Score par défaut
-      bestPractices: 75, // Score par défaut
+      accessibility: -1,
+      bestPractices: -1,
     };
 
     let allIssues: AuditIssue[] = [...htmlIssues, ...performanceIssues];
+    let lighthouseExecuted = false;
 
-    // Exécution de Lighthouse si demandé
     if (options.lighthouse) {
       try {
         const lighthouseResult = await runLighthouse(page, url);
+        
+        if (
+          lighthouseResult.performance !== -1 &&
+          lighthouseResult.seo !== -1 &&
+          lighthouseResult.accessibility !== -1 &&
+          lighthouseResult.bestPractices !== -1
+        ) {
+          lighthouseExecuted = true;
+
+          categories = {
+            seo: Math.max(seoScore, lighthouseResult.seo),
+            performance: Math.max(
+              performanceScore,
+              lighthouseResult.performance
+            ),
+            accessibility: lighthouseResult.accessibility,
+            bestPractices: lighthouseResult.bestPractices,
+          };
+        } else {
+          categories.accessibility = lighthouseResult.accessibility;
+          categories.bestPractices = lighthouseResult.bestPractices;
+        }
+
         const lighthouseIssues = generateLighthouseIssues(lighthouseResult);
 
-        // Mise à jour des scores avec Lighthouse
-        categories = {
-          seo: Math.max(seoScore, lighthouseResult.seo),
-          performance: Math.max(performanceScore, lighthouseResult.performance),
-          accessibility: lighthouseResult.accessibility,
-          bestPractices: lighthouseResult.bestPractices,
-        };
-
-        // Ajout des issues Lighthouse
         allIssues = [
           ...htmlIssues,
           ...performanceIssues,
@@ -106,26 +110,55 @@ export async function analyzeSite(
             type: issue.type as AuditIssue["type"],
             message: issue.message,
             severity: issue.severity as AuditIssue["severity"],
+            messageKey: issue.messageKey,
+            priority: issue.priority,
+            description: issue.description,
+            impact: issue.impact,
+            action: issue.action,
           })),
         ];
       } catch (lighthouseError) {
         console.warn(
-          "Erreur Lighthouse, utilisation des scores par défaut:",
+          "Erreur Lighthouse, scores non disponibles:",
           lighthouseError
         );
       }
     }
 
-    // Calcul du score global
-    const overallScore = calculateOverallScore(categories);
+    const validCategories = {
+      seo: categories.seo >= 0 ? categories.seo : 0,
+      performance: categories.performance >= 0 ? categories.performance : 0,
+      accessibility: categories.accessibility >= 0 ? categories.accessibility : 0,
+      bestPractices: categories.bestPractices >= 0 ? categories.bestPractices : 0,
+    };
 
-    // Génération du rapport final
+    const overallScore = calculateOverallScore(validCategories);
+
+    const detailedRecommendations = generateContextualRecommendations(
+      allIssues,
+      technologyDetection.siteType,
+      technologyDetection.cms
+    );
+
+    const quickWins = generateQuickWins(allIssues);
+
+    const siteTypeAdvice = generateSiteTypeSpecificAdvice(
+      technologyDetection.siteType,
+      allIssues
+    );
+
+    const simplifiedIssues = allIssues.map(issue => ({
+      type: issue.type,
+      message: issue.message,
+      severity: issue.severity
+    }));
+
     const report: AuditReport = {
       status: "success",
       url,
       score: overallScore,
       categories,
-      issues: allIssues,
+      issues: simplifiedIssues,
       shortSummary: generateShortSummary(allIssues, overallScore),
       recommendations: generateRecommendations(allIssues),
       pageInfo,
@@ -155,7 +188,6 @@ export async function analyzeSite(
       company_email: options.company_email,
     };
   } finally {
-    // Nettoyage des ressources
     if (page) {
       try {
         await page.close();

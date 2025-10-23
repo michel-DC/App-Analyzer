@@ -1,20 +1,5 @@
-/**
- * Utilitaires communs pour l'audit web
- * Fonctions helper pour timeout, formattage et gestion d'erreurs
- */
+export const AUDIT_TIMEOUT = 120000; 
 
-/**
- * Timeout global pour l'audit (2 minutes)
- */
-export const AUDIT_TIMEOUT = 120000; // 120 secondes
-
-/**
- * Applique un timeout à une promesse
- * @param promise Promesse à exécuter
- * @param timeoutMs Timeout en millisecondes
- * @param timeoutMessage Message d'erreur en cas de timeout
- * @returns Promise<T> Résultat de la promesse ou erreur de timeout
- */
 export async function withTimeout<T>(
   promise: Promise<T>,
   timeoutMs: number = AUDIT_TIMEOUT,
@@ -37,11 +22,6 @@ export async function withTimeout<T>(
   });
 }
 
-/**
- * Valide qu'une URL est valide
- * @param url URL à valider
- * @returns boolean True si l'URL est valide
- */
 export function isValidUrl(url: string): boolean {
   try {
     new URL(url);
@@ -51,11 +31,6 @@ export function isValidUrl(url: string): boolean {
   }
 }
 
-/**
- * Normalise une URL (ajoute https:// si pas de protocole)
- * @param url URL à normaliser
- * @returns string URL normalisée
- */
 export function normalizeUrl(url: string): string {
   if (!url.startsWith("http://") && !url.startsWith("https://")) {
     return `https://${url}`;
@@ -63,11 +38,6 @@ export function normalizeUrl(url: string): string {
   return url;
 }
 
-/**
- * Calcule un score global basé sur les catégories
- * @param categories Scores par catégorie
- * @returns number Score global (0-100)
- */
 export function calculateOverallScore(categories: {
   seo: number;
   performance: number;
@@ -89,79 +59,88 @@ export function calculateOverallScore(categories: {
   );
 }
 
-/**
- * Génère un résumé court basé sur les issues trouvées
- * @param issues Liste des issues
- * @param score Score global
- * @returns string Résumé court
- */
 export function generateShortSummary(
   issues: Array<{ type: string; severity: string }>,
   score: number
 ): string {
+  const criticalIssues = issues.filter((i) => i.severity === "high").length;
+  const mediumIssues = issues.filter((i) => i.severity === "medium").length;
+  const totalIssues = issues.length;
+
   if (score >= 90) {
-    return "Excellent site avec de très bonnes performances.";
+    if (totalIssues === 0) {
+      return "Excellent travail ! Votre site respecte toutes les bonnes pratiques essentielles. Continuez à surveiller régulièrement vos performances pour maintenir ce niveau d'excellence.";
+    }
+    return `Votre site est très bien optimisé (score ${score}/100). ${totalIssues} point${
+      totalIssues > 1 ? "s" : ""
+    } mineur${
+      totalIssues > 1 ? "s" : ""
+    } à améliorer pour atteindre la perfection.`;
   }
 
   if (score >= 75) {
-    return "Bon site avec quelques améliorations possibles.";
+    return `Votre site est globalement bien conçu (score ${score}/100). Nous avons identifié ${criticalIssues} problème${
+      criticalIssues > 1 ? "s" : ""
+    } important${
+      criticalIssues > 1 ? "s" : ""
+    } et ${mediumIssues} point${
+      mediumIssues > 1 ? "s" : ""
+    } d'amélioration. En corrigeant ces éléments, vous pouvez significativement améliorer votre visibilité et l'expérience de vos visiteurs.`;
   }
 
   if (score >= 50) {
-    return "Site correct mais nécessitant des optimisations importantes.";
+    const timeEstimate =
+      criticalIssues > 5 ? "2 à 5 jours" : criticalIssues > 2 ? "1 à 2 jours" : "quelques heures";
+    return `Votre site nécessite des optimisations importantes (score ${score}/100). ${criticalIssues} problème${
+      criticalIssues > 1 ? "s" : ""
+    } critique${
+      criticalIssues > 1 ? "s" : ""
+    } affecte${
+      criticalIssues > 1 ? "nt" : ""
+    } votre référencement et vos performances. Budget estimé de correction : ${timeEstimate} de travail. L'investissement en vaut la peine : ces corrections peuvent doubler votre trafic.`;
   }
 
-  return "Site nécessitant des améliorations majeures.";
+  return `Votre site présente ${criticalIssues} problème${
+    criticalIssues > 1 ? "s" : ""
+  } majeur${
+    criticalIssues > 1 ? "s" : ""
+  } qui impacte${
+    criticalIssues > 1 ? "nt" : ""
+  } gravement votre visibilité et vos performances (score ${score}/100). Une refonte technique est fortement recommandée. Ces problèmes vous font perdre jusqu'à 70% de visiteurs potentiels. Consultez nos recommandations détaillées pour prioriser les actions correctives.`;
 }
 
-/**
- * Génère des recommandations basées sur les issues
- * @param issues Liste des issues
- * @returns string[] Liste des recommandations
- */
 export function generateRecommendations(
-  issues: Array<{ type: string; message: string }>
+  issues: Array<{ type: string; message: string; severity?: string; action?: string }>
 ): string[] {
   const recommendations: string[] = [];
-  const seenTypes = new Set<string>();
+  const criticalIssues = issues.filter((i) => i.severity === "high");
+  const importantIssues = issues.filter((i) => i.severity === "medium");
 
-  for (const issue of issues) {
-    if (seenTypes.has(issue.type)) continue;
-    seenTypes.add(issue.type);
+  const priorityIssues = [...criticalIssues, ...importantIssues].slice(0, 7);
 
-    switch (issue.type) {
-      case "SEO":
-        recommendations.push(
-          "Améliorer le SEO (meta descriptions, titres, structure)"
-        );
-        break;
-      case "Performance":
-        recommendations.push(
-          "Optimiser les performances (images, chargement, cache)"
-        );
-        break;
-      case "Accessibility":
-        recommendations.push(
-          "Améliorer l'accessibilité (alt text, contraste, navigation)"
-        );
-        break;
-      case "Best Practices":
-        recommendations.push("Appliquer les bonnes pratiques web");
-        break;
-      case "HTML Structure":
-        recommendations.push("Améliorer la structure HTML");
-        break;
+  for (const issue of priorityIssues) {
+    if (issue.action) {
+      recommendations.push(issue.action);
+    } else {
+      recommendations.push(issue.message);
     }
+  }
+
+  if (recommendations.length === 0) {
+    recommendations.push(
+      "Votre site respecte les bonnes pratiques principales. Continuez à surveiller régulièrement vos performances et votre SEO."
+    );
+    recommendations.push(
+      "Pensez à tester régulièrement votre site sur différents navigateurs et appareils."
+    );
+    recommendations.push(
+      "Mettez à jour régulièrement vos contenus pour maintenir votre positionnement dans Google."
+    );
   }
 
   return recommendations;
 }
 
-/**
- * Gère les erreurs et retourne un message approprié
- * @param error Erreur capturée
- * @returns string Message d'erreur formaté
- */
 export function handleError(error: unknown): string {
   if (error instanceof Error) {
     if (error.message.includes("timeout")) {
