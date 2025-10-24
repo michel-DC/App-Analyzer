@@ -71,10 +71,20 @@ POST /api/analyze
 {
   "url": "https://exemple.com",
   "options": {
-    "lighthouse": true
+    "lighthouse": true,
+    "rowId": "optional-row-identifier",
+    "company_email": "contact@company.com"
   }
 }
 ```
+
+#### Paramètres de la requête
+
+- **`url`** (string, requis) : URL du site à analyser
+- **`options`** (object, optionnel) : Options d'analyse
+  - **`lighthouse`** (boolean, défaut: true) : Activer l'analyse Lighthouse
+  - **`rowId`** (string, optionnel) : Identifiant de ligne pour le suivi
+  - **`company_email`** (string, optionnel) : Email de l'entreprise pour le suivi
 
 ### Réponse de Succès
 
@@ -110,9 +120,30 @@ POST /api/analyze
   "pageInfo": {
     "title": "Exemple - Site Web",
     "firstH1": "Bienvenue sur notre site"
-  }
+  },
+  "rowId": "optional-row-identifier",
+  "company_email": "contact@company.com"
 }
 ```
+
+#### Champs de la réponse
+
+- **`status`** (string) : "success" ou "error"
+- **`url`** (string) : URL analysée
+- **`score`** (number) : Score global (0-100)
+- **`categories`** (object) : Scores par catégorie
+  - **`seo`** (number) : Score SEO (0-100)
+  - **`performance`** (number) : Score performance (0-100)
+  - **`accessibility`** (number) : Score accessibilité (0-100)
+  - **`bestPractices`** (number) : Score bonnes pratiques (0-100)
+- **`issues`** (array) : Liste des problèmes détectés
+- **`shortSummary`** (string) : Résumé de l'analyse
+- **`recommendations`** (array) : Recommandations d'amélioration
+- **`pageInfo`** (object) : Informations de la page
+  - **`title`** (string) : Titre de la page
+  - **`firstH1`** (string) : Premier titre H1
+- **`rowId`** (string, optionnel) : Identifiant de ligne transmis
+- **`company_email`** (string, optionnel) : Email entreprise transmis
 
 ### Réponse d'Erreur
 
@@ -133,7 +164,9 @@ curl -X POST http://localhost:3000/api/analyze \
   -d '{
     "url": "https://google.com",
     "options": {
-      "lighthouse": true
+      "lighthouse": true,
+      "rowId": "audit-001",
+      "company_email": "contact@company.com"
     }
   }'
 ```
@@ -150,6 +183,8 @@ const response = await fetch("http://localhost:3000/api/analyze", {
     url: "https://google.com",
     options: {
       lighthouse: true,
+      rowId: "audit-001",
+      company_email: "contact@company.com"
     },
   }),
 });
@@ -166,7 +201,9 @@ import requests
 response = requests.post('http://localhost:3000/api/analyze', json={
     'url': 'https://google.com',
     'options': {
-        'lighthouse': True
+        'lighthouse': True,
+        'rowId': 'audit-001',
+        'company_email': 'contact@company.com'
     }
 })
 
