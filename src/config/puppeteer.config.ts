@@ -54,6 +54,10 @@ export async function getPuppeteerOptions(): Promise<LaunchOptions> {
 
   if (isProduction || isVercel) {
     const chromium = await import("@sparticuz/chromium");
+    
+    chromium.default.setHeadlessMode = true;
+    chromium.default.setGraphicsMode = false;
+    
     return {
       ...baseOptions,
       args: [
@@ -63,8 +67,35 @@ export async function getPuppeteerOptions(): Promise<LaunchOptions> {
         "--disable-plugins",
         "--disable-web-security",
         "--disable-features=VizDisplayCompositor",
+        "--single-process",
+        "--disable-software-rasterizer",
+        "--disable-dev-tools",
+        "--disable-sync",
+        "--disable-translate",
+        "--hide-scrollbars",
+        "--mute-audio",
+        "--disable-default-apps",
+        "--no-default-browser-check",
+        "--disable-background-networking",
+        "--disable-breakpad",
+        "--disable-client-side-phishing-detection",
+        "--disable-component-extensions-with-background-pages",
+        "--disable-features=AudioServiceOutOfProcess,IsolateOrigins,site-per-process",
+        "--disable-hang-monitor",
+        "--disable-ipc-flooding-protection",
+        "--disable-popup-blocking",
+        "--disable-prompt-on-repost",
+        "--metrics-recording-only",
+        "--safebrowsing-disable-auto-update",
+        "--enable-automation",
+        "--password-store=basic",
+        "--use-mock-keychain",
+        "--disable-blink-features=AutomationControlled",
+        "--memory-pressure-off",
       ],
       executablePath: await chromium.default.executablePath(),
+      ignoreDefaultArgs: ["--disable-extensions"],
+      protocolTimeout: 60000,
     };
   }
 

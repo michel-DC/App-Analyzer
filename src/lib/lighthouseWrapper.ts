@@ -46,6 +46,9 @@ export async function runLighthouseSafe(
 
     console.log(`Lighthouse utilise le port: ${port}`);
 
+    const isProduction = process.env.NODE_ENV === "production";
+    const isVercel = process.env.VERCEL === "1";
+
     const options = {
       logLevel: "error" as const,
       output: "json" as const,
@@ -53,6 +56,34 @@ export async function runLighthouseSafe(
       port: port,
       disableStorageReset: true,
       disableDeviceEmulation: true,
+      ...(isProduction || isVercel ? {
+        throttlingMethod: "provided" as const,
+        throttling: {
+          rttMs: 0,
+          throughputKbps: 10 * 1024,
+          cpuSlowdownMultiplier: 1,
+          requestLatencyMs: 0,
+          downloadThroughputKbps: 0,
+          uploadThroughputKbps: 0,
+        },
+        screenEmulation: {
+          disabled: true,
+        },
+        emulatedFormFactor: "none" as const,
+        skipAudits: [
+          "screenshot-thumbnails",
+          "final-screenshot",
+          "full-page-screenshot",
+          "network-requests",
+          "network-rtt",
+          "network-server-latency",
+          "main-thread-tasks",
+          "diagnostics",
+          "metrics",
+          "resource-summary",
+          "third-party-summary",
+        ],
+      } : {}),
     };
 
     const runnerResult = (await lighthouse(

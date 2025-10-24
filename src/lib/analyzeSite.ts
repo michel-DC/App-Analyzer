@@ -42,13 +42,48 @@ export async function analyzeSite(
     );
     page = await browser.newPage();
 
+    const isProduction = process.env.NODE_ENV === "production";
+    const isVercel = process.env.VERCEL === "1";
+
+    if (isProduction || isVercel) {
+      await page.setRequestInterception(true);
+      page.on("request", (request) => {
+        const resourceType = request.resourceType();
+        const url = request.url();
+        
+        if (
+          resourceType === "font" ||
+          resourceType === "media" ||
+          (resourceType === "image" && !url.includes("logo")) ||
+          resourceType === "stylesheet" ||
+          resourceType === "texttrack" ||
+          resourceType === "websocket" ||
+          url.includes("analytics") ||
+          url.includes("ads") ||
+          url.includes("tracking") ||
+          url.includes("facebook.com") ||
+          url.includes("google-analytics") ||
+          url.includes("googletagmanager") ||
+          url.includes("hotjar") ||
+          url.includes("doubleclick")
+        ) {
+          request.abort();
+        } else {
+          request.continue();
+        }
+      });
+    }
+
     await page.setViewport({ width: 1920, height: 1080 });
     await page.setUserAgent(
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     );
 
     await withTimeout(
-      page.goto(url, { waitUntil: "networkidle0", timeout: 30000 }),
+      page.goto(url, { 
+        waitUntil: isProduction || isVercel ? "domcontentloaded" : "networkidle0", 
+        timeout: 30000 
+      }),
       30000,
       "Timeout: site inaccessible"
     );
