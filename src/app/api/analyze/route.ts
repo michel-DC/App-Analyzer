@@ -28,7 +28,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     try {
       new URL(normalizedUrl);
-    } catch (urlError) {
+    } catch {
       return NextResponse.json(
         {
           status: "error",

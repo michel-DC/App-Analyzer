@@ -7,22 +7,31 @@ export async function getPerformanceMetrics(
   page: Page
 ): Promise<PerformanceMetrics> {
   await page.evaluate(() => {
-    (window as any).__clsValue = 0;
-    (window as any).__fidValue = 0;
+    const windowWithExtras = window as Window & {
+      __clsValue?: number;
+      __fidValue?: number;
+    };
+    
+    windowWithExtras.__clsValue = 0;
+    windowWithExtras.__fidValue = 0;
 
     let clsScore = 0;
 
     try {
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          if (!(entry as any).hadRecentInput) {
-            clsScore += (entry as any).value;
+          const layoutShiftEntry = entry as PerformanceEntry & {
+            hadRecentInput?: boolean;
+            value?: number;
+          };
+          if (!layoutShiftEntry.hadRecentInput) {
+            clsScore += layoutShiftEntry.value || 0;
           }
         }
-        (window as any).__clsValue = clsScore;
+        windowWithExtras.__clsValue = clsScore;
       });
       observer.observe({ type: "layout-shift", buffered: true });
-    } catch (e) {
+    } catch {
       console.warn("CLS monitoring not supported");
     }
 
@@ -32,12 +41,12 @@ export async function getPerformanceMetrics(
           const firstInput = entry as PerformanceEventTiming;
           if (firstInput.processingStart && firstInput.startTime) {
             const fid = firstInput.processingStart - firstInput.startTime;
-            (window as any).__fidValue = fid;
+            windowWithExtras.__fidValue = fid;
           }
         }
       });
       fidObserver.observe({ type: "first-input", buffered: true });
-    } catch (e) {
+    } catch {
       console.warn("FID monitoring not supported");
     }
   });
@@ -53,6 +62,11 @@ export async function getPerformanceMetrics(
     const fcp = paint.find((entry) => entry.name === "first-contentful-paint");
     const lcp = performance.getEntriesByType("largest-contentful-paint");
 
+    const windowWithExtras = window as Window & {
+      __clsValue?: number;
+      __fidValue?: number;
+    };
+
     return {
       loadTime: navigation.loadEventEnd - navigation.loadEventStart,
       domContentLoaded:
@@ -61,8 +75,8 @@ export async function getPerformanceMetrics(
       firstContentfulPaint: fcp ? fcp.startTime : 0,
       largestContentfulPaint:
         lcp.length > 0 ? lcp[lcp.length - 1].startTime : 0,
-      cumulativeLayoutShift: (window as any).__clsValue || 0,
-      firstInputDelay: (window as any).__fidValue || 0,
+      cumulativeLayoutShift: windowWithExtras.__clsValue || 0,
+      firstInputDelay: windowWithExtras.__fidValue || 0,
     };
   });
 

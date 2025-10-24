@@ -29,7 +29,21 @@ export async function detectTechnologies(
       let siteType: TechnologyDetection["siteType"] = "unknown";
 
       if (typeof window !== "undefined") {
-        if ((window as any).React || (window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__) {
+        const windowWithExtras = window as Window & {
+          React?: unknown;
+          __REACT_DEVTOOLS_GLOBAL_HOOK__?: unknown;
+          Vue?: unknown;
+          __VUE__?: unknown;
+          angular?: unknown;
+          next?: unknown;
+          jQuery?: unknown;
+          $?: unknown;
+          ga?: unknown;
+          gtag?: unknown;
+          dataLayer?: unknown;
+        };
+
+        if (windowWithExtras.React || windowWithExtras.__REACT_DEVTOOLS_GLOBAL_HOOK__) {
           technologies.push({
             name: "React",
             category: "framework",
@@ -37,7 +51,7 @@ export async function detectTechnologies(
           });
         }
 
-        if ((window as any).Vue || (window as any).__VUE__) {
+        if (windowWithExtras.Vue || windowWithExtras.__VUE__) {
           technologies.push({
             name: "Vue.js",
             category: "framework",
@@ -45,7 +59,7 @@ export async function detectTechnologies(
           });
         }
 
-        if ((window as any).angular || document.querySelector("[ng-app], [ng-version]")) {
+        if (windowWithExtras.angular || document.querySelector("[ng-app], [ng-version]")) {
           technologies.push({
             name: "Angular",
             category: "framework",
@@ -53,7 +67,7 @@ export async function detectTechnologies(
           });
         }
 
-        if ((window as any).next || document.querySelector('[id="__next"]')) {
+        if (windowWithExtras.next || document.querySelector('[id="__next"]')) {
           technologies.push({
             name: "Next.js",
             category: "framework",
@@ -61,7 +75,7 @@ export async function detectTechnologies(
           });
         }
 
-        if ((window as any).jQuery || (window as any).$) {
+        if (windowWithExtras.jQuery || windowWithExtras.$) {
           technologies.push({
             name: "jQuery",
             category: "library",
@@ -69,7 +83,7 @@ export async function detectTechnologies(
           });
         }
 
-        if ((window as any).ga || (window as any).gtag || (window as any).dataLayer) {
+        if (windowWithExtras.ga || windowWithExtras.gtag || windowWithExtras.dataLayer) {
           technologies.push({
             name: "Google Analytics",
             category: "analytics",

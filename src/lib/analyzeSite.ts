@@ -19,7 +19,7 @@ import {
 } from "./getPerformanceMetrics";
 import { runLighthouse, generateLighthouseIssues } from "./runLighthouse";
 import { extractPageInfo } from "./extractPageInfo";
-import { detectTechnologies, getSiteTypeLabel } from "./detectTechnologies";
+import { detectTechnologies } from "./detectTechnologies";
 import {
   generateContextualRecommendations,
   generateQuickWins,
@@ -73,7 +73,6 @@ export async function analyzeSite(
     };
 
     let allIssues: AuditIssue[] = [...htmlIssues, ...performanceIssues];
-    let lighthouseExecuted = false;
 
     if (options.lighthouse) {
       try {
@@ -85,8 +84,6 @@ export async function analyzeSite(
           lighthouseResult.accessibility !== -1 &&
           lighthouseResult.bestPractices !== -1
         ) {
-          lighthouseExecuted = true;
-
           categories = {
             seo: Math.max(seoScore, lighthouseResult.seo),
             performance: Math.max(
@@ -134,15 +131,15 @@ export async function analyzeSite(
 
     const overallScore = calculateOverallScore(validCategories);
 
-    const detailedRecommendations = generateContextualRecommendations(
+    generateContextualRecommendations(
       allIssues,
       technologyDetection.siteType,
       technologyDetection.cms
     );
 
-    const quickWins = generateQuickWins(allIssues);
+    generateQuickWins(allIssues);
 
-    const siteTypeAdvice = generateSiteTypeSpecificAdvice(
+    generateSiteTypeSpecificAdvice(
       technologyDetection.siteType,
       allIssues
     );

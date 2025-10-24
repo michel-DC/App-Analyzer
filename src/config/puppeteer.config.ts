@@ -27,7 +27,7 @@ function findChromeExecutable(): string | undefined {
     if (match && match[1]) {
       return match[1].trim();
     }
-  } catch (error) {
+  } catch {
     console.warn("Could not find Chrome in registry");
   }
 

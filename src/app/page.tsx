@@ -1,12 +1,16 @@
+import Image from "next/image";
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-white flex flex-col items-center justify-center px-4">
       <div className="max-w-4xl mx-auto text-center">
         <div className="mb-12">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <img
+            <Image
               src="/assets/search.svg"
               alt="App Analyzer Logo"
+              width={40}
+              height={40}
               className="h-10 w-10"
             />
             <h1 className="text-4xl font-bold text-black">App Analyzer</h1>
@@ -20,9 +24,11 @@ export default function Home() {
 
         <div className="mb-16 flex justify-center">
           <div className="relative">
-            <img
+            <Image
               src="/assets/server.svg"
               alt="Server Infrastructure"
+              width={256}
+              height={256}
               className="h-64 w-auto opacity-90"
             />
           </div>
