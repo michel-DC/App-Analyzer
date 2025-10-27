@@ -1,8 +1,8 @@
-export interface AuditOptions {
-  lighthouse: boolean;
+export type AuditOptions = {
+  lighthouse?: boolean;
   rowId?: string;
   company_email?: string;
-}
+};
 
 export interface AuditIssue {
   type:
@@ -90,4 +90,26 @@ export interface PerformanceMetrics {
 export interface AnalyzeRequest {
   url: string;
   options: AuditOptions;
+}
+
+export interface BatchAnalyzeRequest {
+  urls: string[];
+  options?: AuditOptions;
+}
+
+export interface BatchAnalyzeResponse {
+  reports: AuditReport[];
+}
+
+export interface BatchAnalyzeItem {
+  url: string;
+  options?: AuditOptions;
+}
+
+export interface BatchAnalyzeRequestMap {
+  sites: BatchAnalyzeItem[];
+}
+
+export interface BatchAnalyzeResponseMap {
+  reports: AuditReport[];
 }
