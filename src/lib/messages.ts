@@ -20,11 +20,12 @@ export const MESSAGES: MessageCatalog = {
     impact:
       "Impact SEO critique : Perte de 40 à 60% de visibilité organique sur Google. Taux de clic très faible dans les résultats de recherche.",
     action:
-      "Ajoutez une balise <title> dans la section <head> de votre page HTML. Le titre doit faire entre 50 et 60 caractères, décrire précisément le contenu de la page et inclure vos mots-clés principaux.",
+      "Ne laissez pas cette opportunité s'échapper ! Ajoutez dès maintenant une balise <title> stratégique dans votre section <head>. Imaginez ce titre comme votre vitrine numérique : 50-60 caractères maximum, avec vos mots-clés principaux qui attirent l'œil comme un aimant !",
     priority: "critique",
     codeExample:
-      '<head>\n  <title>Nom de votre entreprise - Service principal | Ville</title>\n</head>',
-    documentation: "https://developers.google.com/search/docs/appearance/title-link",
+      "<head>\n  <title>Nom de votre entreprise - Service principal | Ville</title>\n</head>",
+    documentation:
+      "https://developers.google.com/search/docs/appearance/title-link",
   },
 
   title_too_short: {
@@ -34,10 +35,10 @@ export const MESSAGES: MessageCatalog = {
     impact:
       "Impact SEO modéré : Opportunité manquée d'inclure des mots-clés importants. Taux de clic inférieur de 20 à 30%.",
     action:
-      "Développez votre titre pour atteindre 50 à 60 caractères. Ajoutez des détails sur votre activité, votre localisation ou vos services principaux. Pensez à ce que vos clients potentiels rechercheraient sur Google.",
+      "Transformez ce titre trop discret en une accroche irrésistible ! Développez-le jusqu'à 50-60 caractères en y intégrant votre localisation, vos services phares... Pensez à ce que vos clients rêveraient de trouver sur Google !",
     priority: "important",
     codeExample:
-      '<title>Plombier Paris 15 - Dépannage Urgence 24h/7j | Devis Gratuit</title>',
+      "<title>Plombier Paris 15 - Dépannage Urgence 24h/7j | Devis Gratuit</title>",
   },
 
   title_too_long: {
@@ -47,10 +48,10 @@ export const MESSAGES: MessageCatalog = {
     impact:
       "Impact UX : Message tronqué dans Google. Perte potentielle de 10 à 15% de clics.",
     action:
-      "Réduisez votre titre à 50-60 caractères maximum. Gardez uniquement les informations essentielles : nom d'entreprise ou service principal, et peut-être votre localisation. Soyez concis et impactant.",
+      "Votre titre a du potentiel, mais il est trop bavard ! Réduisez-le à 50-60 caractères en gardant l'essentiel : votre nom, votre service principal, votre localisation. Soyez percutant comme une signature publicitaire !",
     priority: "important",
     codeExample:
-      '<title>Coiffeur Bio Paris - Coupes & Colorations Naturelles</title>',
+      "<title>Coiffeur Bio Paris - Coupes & Colorations Naturelles</title>",
   },
 
   missing_meta_description: {
@@ -60,7 +61,7 @@ export const MESSAGES: MessageCatalog = {
     impact:
       "Impact SEO important : Baisse de 15 à 25% du taux de clic depuis Google. Moins de visiteurs sur votre site même si vous êtes bien positionné.",
     action:
-      "Ajoutez une balise <meta name='description'> dans le <head> de votre page. Rédigez un texte de 150 à 160 caractères qui décrit votre offre de manière attractive et incite au clic. Incluez vos mots-clés principaux et un appel à l'action.",
+      "Ne laissez pas Google choisir ce qu'il dit de vous ! Créez une meta description de 150-160 caractères qui donne envie de cliquer. C'est votre elevator pitch numérique : soyez persuasif, incluez vos atouts majeurs et un appel à l'action qui crée l'urgence !",
     priority: "critique",
     codeExample:
       '<meta name="description" content="Plombier certifié à Paris 15. Intervention rapide sous 30 min, devis gratuit. Dépannage chaudière, fuite d\'eau, débouchage. ☎ 01.XX.XX.XX.XX">',
@@ -73,7 +74,7 @@ export const MESSAGES: MessageCatalog = {
     impact:
       "Impact marketing : Vous laissez vos concurrents avec des descriptions complètes prendre l'avantage. Perte de 10 à 15% de clics potentiels.",
     action:
-      "Développez votre description pour atteindre 150 à 160 caractères. Ajoutez plus de détails sur vos services, vos avantages distinctifs, ou un appel à l'action clair. Pensez à ce qui pourrait convaincre un client hésitant.",
+      "Vous avez de la place, utilisez-la ! Développez votre description jusqu'à 150-160 caractères. Ajoutez vos avantages exclusifs, vos garanties, un numéro qui rassure... Transformez les hésitants en clients !",
     priority: "important",
     codeExample:
       '<meta name="description" content="Restaurant italien authentique au cœur de Lyon. Pâtes fraîches maison, pizzas au feu de bois, produits bio. Terrasse ouverte. Réservation en ligne ou au 04.XX.XX.XX.XX">',
@@ -86,7 +87,7 @@ export const MESSAGES: MessageCatalog = {
     impact:
       "Impact UX : Message incomplet dans les résultats Google. Perte de clarté et d'efficacité marketing.",
     action:
-      "Réduisez votre description à 150-160 caractères. Placez les informations les plus importantes au début. Soyez concis : mettez en avant votre principal avantage, votre localisation si pertinent, et éventuellement un appel à l'action court.",
+      "Votre message est bon mais trop long ! Coupez-le à 150-160 caractères en plaçant l'essentiel au début. Votre principal avantage, votre localisation stratégique, un appel court mais percutant !",
     priority: "important",
     codeExample:
       '<meta name="description" content="Expert-comptable Paris 11. Gestion complète de votre comptabilité : bilan, déclarations, conseil fiscal. Premier RDV gratuit. ☎ 01.XX.XX.XX.XX">',
@@ -99,7 +100,7 @@ export const MESSAGES: MessageCatalog = {
     impact:
       "Impact critique : Site illisible sur mobile. Perte de 50 à 70% des visiteurs mobiles qui quittent immédiatement. Pénalisation par Google dans les résultats de recherche mobile.",
     action:
-      "Ajoutez la balise <meta name='viewport'> dans le <head> de toutes vos pages. Cette balise permet au navigateur d'adapter automatiquement l'affichage à la taille de l'écran. C'est la première étape indispensable du responsive design.",
+      "Ne perdez pas la moitié de vos visiteurs ! Ajoutez immédiatement la balise viewport dans votre <head>. C'est la clé pour offrir une expérience mobile impeccable qui retient vos clients plutôt que de les faire fuir !",
     priority: "critique",
     codeExample:
       '<head>\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n</head>',
@@ -112,7 +113,7 @@ export const MESSAGES: MessageCatalog = {
     impact:
       "Impact SEO modéré : Risque de contenu dupliqué aux yeux de Google. Dilution du référencement entre plusieurs versions de la même page. Perte de 10 à 20% d'efficacité SEO.",
     action:
-      "Ajoutez une balise <link rel='canonical'> dans le <head> pointant vers l'URL principale de votre page. Utilisez toujours l'URL complète avec le protocole https://. Assurez-vous que toutes les versions de votre page pointent vers la même URL canonique.",
+      "Évitez que Google ne s'embrouille avec vos différentes URLs ! Ajoutez un lien canonique qui pointe vers votre URL principale. Ainsi, toute la puissance SEO se concentre sur une seule version de votre page !",
     priority: "important",
     codeExample:
       '<head>\n  <link rel="canonical" href="https://www.votresite.fr/votre-page">\n</head>',
@@ -125,10 +126,9 @@ export const MESSAGES: MessageCatalog = {
     impact:
       "Impact SEO important : Google ne peut pas identifier clairement le sujet de votre page. Perte de 20 à 30% d'efficacité sur votre mot-clé principal. Mauvaise expérience utilisateur.",
     action:
-      "Ajoutez un titre H1 visible au début de votre contenu principal. Ce titre doit résumer en quelques mots le sujet de la page et inclure votre mot-clé principal. N'utilisez qu'un seul H1 par page (pour les sous-titres, utilisez H2, H3, etc.).",
+      "Donnez immédiatement un cap à votre page ! Ajoutez un H1 percutant qui résume votre contenu en incluant votre mot-clé principal. C'est comme le titre d'un livre : il doit immédiatement captiver et informer !",
     priority: "critique",
-    codeExample:
-      '<h1>Cours de yoga à Marseille - Débutants et confirmés</h1>',
+    codeExample: "<h1>Cours de yoga à Marseille - Débutants et confirmés</h1>",
   },
 
   multiple_h1: {
@@ -138,10 +138,10 @@ export const MESSAGES: MessageCatalog = {
     impact:
       "Impact SEO modéré : Confusion pour Google sur le sujet principal de votre page. Dilution de 15 à 25% de l'impact de vos mots-clés principaux.",
     action:
-      "Gardez un seul H1 par page - votre titre principal. Transformez les autres H1 en H2, H3, etc. selon leur niveau d'importance. Structure recommandée : un H1 (titre principal), plusieurs H2 (sections), des H3 sous les H2 si besoin.",
+      "Un seul H1 pour régner sur la concurrence ! Gardez votre titre principal en H1 et transformez les autres en H2 ou H3. Ainsi, Google comprendra parfaitement votre structure et vos mots-clés gagneront en puissance !",
     priority: "important",
     codeExample:
-      '<h1>Titre principal de la page</h1>\n<h2>Première section</h2>\n<h3>Sous-section</h3>\n<h2>Deuxième section</h2>',
+      "<h1>Titre principal de la page</h1>\n<h2>Première section</h2>\n<h3>Sous-section</h3>\n<h2>Deuxième section</h2>",
   },
 
   images_without_alt: {
@@ -151,7 +151,7 @@ export const MESSAGES: MessageCatalog = {
     impact:
       "Impact accessibilité et SEO : Exclusion des personnes malvoyantes (discrimination). Images invisibles pour Google (perte de référencement image). Non-conformité légale aux normes d'accessibilité.",
     action:
-      "Ajoutez un attribut 'alt' à toutes vos images. La description doit être précise et utile : décrivez ce que montre l'image en une phrase courte. Pour les images décoratives, utilisez alt=\"\". Incluez vos mots-clés de manière naturelle quand c'est pertinent.",
+      "Rendez vos images parlantes pour tous ! Ajoutez un attribut 'alt' descriptif à chaque image importante. Pour Google, c'est une opportunité de référencement supplémentaire. Pour vos visiteurs, c'est une expérience inclusive et professionnelle !",
     priority: "critique",
     codeExample:
       '<img src="coiffeur-coupe.jpg" alt="Coiffeur réalisant une coupe moderne pour homme">\n<img src="decoration.svg" alt="">',
@@ -164,10 +164,10 @@ export const MESSAGES: MessageCatalog = {
     impact:
       "Impact SEO et UX : Structure incohérente aux yeux de Google. Compréhension difficile du sujet principal. Perte d'environ 15% d'efficacité SEO.",
     action:
-      "Ajoutez un titre H1 au début de votre contenu principal, avant vos H2. Le H1 doit être le titre le plus important, suivi des H2 pour vos sections principales, puis des H3 pour les sous-sections. Respectez toujours cette hiérarchie.",
+      "Commencez par le commencement ! Ajoutez un H1 avant vos H2 pour établir une hiérarchie claire. Votre page aura soudain beaucoup plus de sens pour Google et vos visiteurs suivront naturellement votre contenu !",
     priority: "important",
     codeExample:
-      '<article>\n  <h1>Titre principal de l\'article</h1>\n  <h2>Première section</h2>\n  <p>Contenu...</p>\n  <h2>Deuxième section</h2>\n</article>',
+      "<article>\n  <h1>Titre principal de l'article</h1>\n  <h2>Première section</h2>\n  <p>Contenu...</p>\n  <h2>Deuxième section</h2>\n</article>",
   },
 
   slow_load_time: {
@@ -177,7 +177,7 @@ export const MESSAGES: MessageCatalog = {
     impact:
       "Impact business critique : Perte de 20 à 40% de visiteurs avant même qu'ils voient votre site. Baisse du référencement Google. Perte de chiffre d'affaires directe.",
     action:
-      "Optimisez vos images (compression, format WebP), activez la mise en cache, utilisez un hébergement performant, minimisez vos fichiers CSS/JS. Mesurez régulièrement votre vitesse avec PageSpeed Insights. Objectif : moins de 2 secondes.",
+      "Vos visiteurs s'impatientent ! Optimisez vos images, activez la mise en cache, utilisez un hébergement performant. Chaque seconde gagnée, c'est des clients conservés et un meilleur classement Google !",
     priority: "critique",
     documentation: "https://web.dev/fast/",
   },
@@ -189,7 +189,7 @@ export const MESSAGES: MessageCatalog = {
     impact:
       "Impact UX et conversion : Frustration des visiteurs face à l'écran blanc. Taux de rebond élevé (40% de départ avant affichage). Impression de site cassé ou lent.",
     action:
-      "Optimisez le chargement des ressources critiques : placez le CSS important dans le <head>, préchargez les polices, optimisez le serveur. Réduisez la taille de votre HTML initial. Éliminez les ressources qui bloquent le rendu. Objectif FCP : moins de 1.8 seconde.",
+      "Faites disparaître cet écran blanc énervant ! Optimisez le chargement de vos ressources critiques. Vos visiteurs doivent voir du contenu en moins de 1.8 seconde, sinon ils pensent que votre site est en panne !",
     priority: "critique",
     documentation: "https://web.dev/fcp/",
   },
@@ -201,7 +201,7 @@ export const MESSAGES: MessageCatalog = {
     impact:
       "Impact SEO et UX majeur : Critère officiel de Google pour le classement. Mauvaise expérience utilisateur. Perte de 30 à 50% de visiteurs. Baisse de conversions.",
     action:
-      "Optimisez votre élément principal : compressez l'image principale, utilisez un CDN, préchargez les ressources importantes. Optimisez votre serveur pour un temps de réponse rapide. Éliminez le JavaScript qui bloque le rendu. Objectif LCP : moins de 2.5 secondes.",
+      "Votre contenu principal se fait désirer ! Optimisez votre image principale, utilisez un CDN, préchargez les ressources importantes. Montrez l'essentiel rapidement, sinon vos visiteurs partiront avant de découvrir votre valeur !",
     priority: "critique",
     documentation: "https://web.dev/lcp/",
   },
@@ -213,7 +213,7 @@ export const MESSAGES: MessageCatalog = {
     impact:
       "Impact UX majeur : Frustration extrême des utilisateurs. Clics accidentels sur les mauvais boutons. Perte de confiance. Pénalisation Google pour l'expérience utilisateur.",
     action:
-      "Réservez l'espace pour les images (attributs width et height), évitez d'insérer du contenu au-dessus du contenu existant, préchargez les polices. Testez sur PageSpeed Insights. Objectif CLS : moins de 0.1.",
+      "Stabilisez votre mise en page ! Réservez l'espace pour les images, évitez d'ajouter du contenu au-dessus. Vos visiteurs détestent quand les boutons bougent sous leurs doigts - offrez-leur une expérience stable et professionnelle !",
     priority: "important",
     documentation: "https://web.dev/cls/",
   },
@@ -225,7 +225,7 @@ export const MESSAGES: MessageCatalog = {
     impact:
       "Impact UX : Impression de site qui ne répond pas. Frustration lors de l'utilisation. Abandon des formulaires et des actions. Perte de conversions.",
     action:
-      "Réduisez et optimisez votre JavaScript. Découpez les longues tâches en tâches plus petites. Utilisez le chargement différé pour le JS non critique. Éliminez les scripts tiers bloquants. Objectif FID : moins de 100 millisecondes.",
+      "Votre site ne doit pas faire la sourde oreille ! Réduisez votre JavaScript, découpez les tâches lourdes. Quand un visiteur clique, il attend une réponse immédiate - ne le décevez pas !",
     priority: "important",
     documentation: "https://web.dev/fid/",
   },
@@ -237,7 +237,7 @@ export const MESSAGES: MessageCatalog = {
     impact:
       "Impact business catastrophique : Perte de 60 à 80% des visiteurs mobiles. Pénalisation majeure par Google (mobile-first index). Taux de rebond supérieur à 90% sur mobile. Perte de chiffre d'affaires massive.",
     action:
-      "Refonte complète en responsive design : utilisez des media queries CSS, testez sur différentes tailles d'écran, utilisez des frameworks CSS modernes (Bootstrap, Tailwind). Testez régulièrement sur de vrais smartphones. Budget estimé : 2 à 5 jours de développement.",
+      "Ne fermez pas la porte à la majorité de vos clients ! Passez au responsive design. Vos visiteurs mobiles représentent votre plus grand marché - donnez-leur une expérience adaptée à leur écran !",
     priority: "critique",
     documentation: "https://web.dev/responsive-web-design-basics/",
   },
@@ -249,7 +249,7 @@ export const MESSAGES: MessageCatalog = {
     impact:
       "Impact UX modéré : Expérience dégradée pour 30-40% des visiteurs. Image non professionnelle. Difficulté de navigation et de lecture.",
     action:
-      "Testez votre site sur différentes résolutions desktop (1366px, 1920px, 2560px). Utilisez max-width sur vos containers. Évitez les largeurs fixes en pixels. Assurez-vous qu'aucun élément ne dépasse de son container.",
+      "Même sur desktop, l'apparence compte ! Testez votre site sur différentes résolutions, utilisez max-width, évitez les largeurs fixes. Offrez à tous vos visiteurs une expérience soignée et professionnelle !",
     priority: "important",
   },
 
@@ -260,7 +260,7 @@ export const MESSAGES: MessageCatalog = {
     impact:
       "Impact global : Combinaison de tous les problèmes de performance. Perte massive de trafic et de conversions. Pénalisation Google multi-facteurs.",
     action:
-      "Audit complet nécessaire : optimisation images, minification des fichiers, mise en cache, CDN, optimisation serveur. Utilisez PageSpeed Insights pour un diagnostic détaillé. Budget : 3 à 10 jours selon l'ampleur des problèmes.",
+      "Votre site mérite mieux qu'une note médiocre ! Lancez un audit complet : optimisation images, mise en cache, CDN. Chaque point gagné sur votre score, c'est des visiteurs satisfaits et un meilleur classement !",
     priority: "critique",
     documentation: "https://pagespeed.web.dev/",
   },
@@ -272,7 +272,7 @@ export const MESSAGES: MessageCatalog = {
     impact:
       "Impact business majeur : Invisibilité sur Google. Très peu de visiteurs organiques. Dépendance totale à la publicité payante. Perte de 70 à 90% du trafic potentiel.",
     action:
-      "Audit SEO complet nécessaire : corriger toutes les balises meta, optimiser les titres et H1, améliorer la structure HTML, créer du contenu de qualité. Consultant SEO recommandé. Budget : 5 à 15 jours de travail.",
+      "Sortez de l'ombre sur Google ! Corrigez vos balises meta, optimisez vos titres, améliorez votre structure. Le référencement naturel est votre meilleur commercial - donnez-lui les outils pour réussir !",
     priority: "critique",
     documentation: "https://developers.google.com/search/docs",
   },
@@ -284,7 +284,7 @@ export const MESSAGES: MessageCatalog = {
     impact:
       "Impact légal et éthique : Risque de poursuites juridiques (sites publics). Exclusion de 15% de clients potentiels. Mauvaise image de marque. Pénalisation possible par Google.",
     action:
-      "Audit d'accessibilité complet : ajout des alt sur toutes les images, amélioration des contrastes, navigation au clavier, labels sur les formulaires, structure ARIA. Conformité RGAA/WCAG niveau AA minimum. Budget : 5 à 20 jours selon la taille du site.",
+      "Ouvrez votre site à tous ! Améliorez les contrastes, ajoutez des labels aux formulaires, structurez votre navigation. L'accessibilité n'est pas une option - c'est une marque de respect pour tous vos visiteurs !",
     priority: "critique",
     documentation: "https://www.w3.org/WAI/WCAG21/quickref/",
   },
@@ -296,7 +296,7 @@ export const MESSAGES: MessageCatalog = {
     impact:
       "Impact sécurité et crédibilité : Risques de piratage. Perte de confiance des visiteurs. Avertissements de sécurité dans les navigateurs. Dysfonctionnements possibles.",
     action:
-      "Audit technique complet : passage en HTTPS, mise à jour des bibliothèques, correction des erreurs console, tests multi-navigateurs. Respect des standards web modernes. Budget : 2 à 8 jours de développement.",
+      "Montrez que vous êtes sérieux ! Passez en HTTPS, mettez à jour vos bibliothèques, corrigez les erreurs. Un site techniquement solide inspire confiance à vos visiteurs et à Google !",
     priority: "important",
     documentation: "https://web.dev/lighthouse-best-practices/",
   },
@@ -308,7 +308,7 @@ export const MESSAGES: MessageCatalog = {
     impact:
       "Impact : Analyse incomplète. Impossibilité d'évaluer certains critères importants. Recommandation : vérifier l'accessibilité et la stabilité de votre site.",
     action:
-      "Vérifiez que votre site est accessible publiquement, optimisez sa vitesse de chargement, et relancez l'analyse. Si le problème persiste, contactez votre hébergeur ou développeur pour identifier les problèmes techniques sous-jacents.",
+      "Même Lighthouse n'arrive pas à analyser votre site ! Vérifiez son accessibilité, optimisez sa vitesse. Un site stable et rapide est la base de toute analyse sérieuse !",
     priority: "important",
   },
 
@@ -319,7 +319,7 @@ export const MESSAGES: MessageCatalog = {
     impact:
       "Impact marketing : Partages sociaux peu attractifs. Perte de 50 à 70% de clics depuis les réseaux sociaux. Visibilité sociale très faible.",
     action:
-      "Ajoutez les balises Open Graph essentielles : og:title, og:description, og:image, og:url. L'image doit faire au moins 1200x630 pixels. Testez avec le débogueur Facebook et LinkedIn.",
+      "Ne ratez pas l'occasion de briller sur les réseaux sociaux ! Ajoutez les balises Open Graph essentielles. Votre site mérite un bel aperçu quand il est partagé - c'est votre carte de visite sociale !",
     priority: "amélioration",
     codeExample:
       '<meta property="og:title" content="Votre titre">\n<meta property="og:description" content="Votre description">\n<meta property="og:image" content="https://votresite.fr/image.jpg">\n<meta property="og:url" content="https://votresite.fr/page">',
@@ -332,7 +332,7 @@ export const MESSAGES: MessageCatalog = {
     impact:
       "Impact SEO : Perte des rich snippets (résultats enrichis). Taux de clic inférieur de 20 à 30%. Moins de visibilité que les concurrents.",
     action:
-      "Implémentez les données structurées JSON-LD adaptées à votre activité : Organization, LocalBusiness, Product, Article, FAQ, etc. Testez avec l'outil de test des résultats enrichis de Google.",
+      "Dépassez vos concurrents dans les résultats Google ! Implémentez les données structurées adaptées à votre activité. Les rich snippets attirent naturellement l'œil et augmentent votre taux de clic !",
     priority: "amélioration",
     documentation: "https://schema.org/",
   },
@@ -349,4 +349,3 @@ export function getMessageShort(key: string): string {
 export function getAllMessages(): MessageCatalog {
   return MESSAGES;
 }
-
